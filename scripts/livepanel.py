@@ -6,6 +6,15 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TEMPLATE = ROOT / "assets" / "template.html"
 CHROME_NAMES = ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome", "microsoft-edge"]
 
+# macOS app-bundle locations: the CLI names above are Linux conventions and shutil.which() misses them on macOS,
+# where the browser only lives inside the .app (or as a Homebrew chromium symlink that exits immediately).
+CHROME_MAC_PATHS = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+]
+
 
 def find_exe(explicit, names, what):
     if explicit:
@@ -17,7 +26,24 @@ def find_exe(explicit, names, what):
         p = shutil.which(n)
         if p:
             return p
-    sys.exit(f"{what} not found on PATH (tried {', '.join(names)}); pass it explicitly")
+    for p in CHROME_MAC_PATHS:
+        if os.path.exists(p):
+            return p
+    sys.exit(f"{what} not found on PATH (tried {', '.join(names)}) or in /Applications; pass it explicitly")
+
+
+def find_chrome(explicit):
+    """Browser lookup that works on macOS: prefer a real /Applications .app (Homebrew's `chromium` shim on PATH
+    often launches then dies on the DevTools pipe), then fall back to PATH names."""
+    if explicit:
+        p = shutil.which(explicit) or (explicit if os.path.exists(explicit) else None)
+        if p:
+            return p
+        sys.exit(f"Chrome not found: {explicit}")
+    for p in CHROME_MAC_PATHS:
+        if os.path.exists(p):
+            return p
+    return find_exe(None, CHROME_NAMES, "Chrome")
 
 
 CANVAS_PRESETS = {"4:5": (1200, 1500), "3:4": (1080, 1440), "1:1": (1080, 1080)}

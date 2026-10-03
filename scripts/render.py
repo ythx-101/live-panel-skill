@@ -28,7 +28,7 @@ def main():
     ap.add_argument("--no-sandbox", action="store_true", help="pass --no-sandbox to Chrome (auto when running as root)")
     a = ap.parse_args()
 
-    chrome = lp.find_exe(a.chrome, lp.CHROME_NAMES, "Chrome")
+    chrome = lp.find_chrome(a.chrome)
     ffmpeg = lp.find_exe(a.ffmpeg, ["ffmpeg"], "ffmpeg")
     tmpdir = tempfile.mkdtemp(prefix="livepanel-page-")
     page = a.html_out or os.path.join(tmpdir, "page.html")
