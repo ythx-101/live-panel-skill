@@ -162,11 +162,14 @@ function pickIdx(m,k){var n=m.values.length,b=Math.floor(hash(m.seed||1,k)*n); i
 var MK={
  counter:function(id,m){return {vars:function(t){V[id]=(m.prefix||'')+fmtNum((m.start||0)+(m.rate||0)*t,m.format)+(m.suffix||'')},events:function(){return []}}},
  cycle:function(id,m){
-  var n=m.values.length;
+  var n=m.values.length, fields=[];
   function idx(j){return m.order?m.order[mod(j,m.order.length)]:mod(j,n)}
   function val(j){var v=m.values[idx(j)]; return typeof v==='object'?v:{t:v}}
-  return {vars:function(t){var j=Math.floor((t-(m.t0||0))/m.period), v=val(j); V[id]=v.t!=null?v.t:(v.m||''); V[id+'.i']=String(idx(j));
-     Object.keys(v).forEach(function(k){V[id+'.'+k]=String(v[k])})},
+  return {vars:function(t){var j=Math.floor((t-(m.t0||0))/m.period), v=val(j);
+     // Drop fields from the previous value so optional fields cannot survive a seek.
+     fields.forEach(function(k){delete V[id+'.'+k]}); fields=Object.keys(v);
+     V[id]=v.t!=null?v.t:(v.m||''); V[id+'.i']=String(idx(j));
+     fields.forEach(function(k){V[id+'.'+k]=String(v[k])})},
    events:function(lo,hi){var o=[]; if(!m.log) return o; for(var j=Math.floor((lo-(m.t0||0))/m.period);j<=Math.ceil((hi-(m.t0||0))/m.period);j++){var v=val(j); o.push({t:(m.t0||0)+j*m.period,who:m.log.who,c:m.log.c,m:v.m!=null?v.m:(v.t||''),g:v.g||''})} return o}}},
  gauge:function(id,m){
   var th=m.threshold, dec=m.decimals==null?2:m.decimals;
