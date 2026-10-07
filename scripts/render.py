@@ -2,7 +2,8 @@
 """Render a live-panel config to an H.264 mp4: step window.seek(t) frame by frame, screenshot, pipe into ffmpeg.
 
   python3 scripts/render.py --config examples/codex-agents/config.json --out out.mp4
-Chrome and ffmpeg are looked up on PATH unless --chrome / --ffmpeg are given.
+Chrome and ffmpeg are looked up on PATH (Chrome also under /Applications on macOS) unless --chrome / --ffmpeg are given.
+Runs on Linux and macOS; on Windows use WSL (the Chrome DevTools pipe needs POSIX fd passing).
 """
 import argparse, os, subprocess, sys, tempfile
 from pathlib import Path
@@ -18,7 +19,7 @@ def main():
     ap.add_argument("--height", type=int, help="video height (default: config canvas.height)")
     ap.add_argument("--duration", type=float, help="seconds (default: config canvas.duration)")
     ap.add_argument("--fps", type=int, help="frames per second (default: config canvas.fps or 30)")
-    ap.add_argument("--chrome", help="Chrome/Chromium executable (default: search PATH)")
+    ap.add_argument("--chrome", help="Chrome/Chromium executable (default: search PATH, and /Applications on macOS)")
     ap.add_argument("--ffmpeg", help="ffmpeg executable (default: search PATH)")
     ap.add_argument("--template", help="alternative template.html")
     ap.add_argument("--crf", type=int, default=16)
@@ -28,7 +29,7 @@ def main():
     ap.add_argument("--no-sandbox", action="store_true", help="pass --no-sandbox to Chrome (auto when running as root)")
     a = ap.parse_args()
 
-    chrome = lp.find_exe(a.chrome, lp.CHROME_NAMES, "Chrome")
+    chrome = lp.find_chrome(a.chrome)
     ffmpeg = lp.find_exe(a.ffmpeg, ["ffmpeg"], "ffmpeg")
     tmpdir = tempfile.mkdtemp(prefix="livepanel-page-")
     page = a.html_out or os.path.join(tmpdir, "page.html")

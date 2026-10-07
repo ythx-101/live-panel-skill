@@ -1,6 +1,6 @@
 ---
 name: live-panel
-description: Build a terminal-style, always-running animated architecture diagram (a "live panel") from a JSON config and render it to an mp4. Use when the user wants a system, agent or org architecture diagram that looks like a monitoring dashboard in a terminal window - fixed layout, glowing packets on the wires, scrolling log, counters, bars that flip state - as a screen-recording-style video or a live web page, instead of a static picture or a step-by-step reveal.
+description: Build a terminal-style, always-running animated architecture diagram (a "live panel") from a JSON config and render it to an mp4. Use when the user wants a system, agent or org architecture diagram that looks like a monitoring dashboard in a terminal window - fixed layout, glowing packets on the wires, scrolling log, counters, bars that flip state - as a screen-recording-style video or a live web page, instead of a static picture or a step-by-step reveal. 中文：当用户要做"活的"架构图、agent 树或系统监控面板风格的动画（mp4 视频或循环网页）时使用——终端里一直在跑的监控面板外观，固定布局、线上流动的数据包、滚动日志、翻转的计数器和状态条；不是静态图，也不是分步演示。
 ---
 
 # live-panel
@@ -23,7 +23,7 @@ A single JSON config (schema: `references/config-schema.md`). It holds everythin
 
 1. **Collect content and where each number comes from.** List boxes, who talks to whom, which things are "on call" triggers, what the log would say. Write the source (link or "simulated") next to every number. If a number has no real source, it is simulated: say so on screen (a footer line, or "(illustrative)" next to the counter). Never invent a figure and present it as real.
 2. **Write the config.** Copy an example. Place boxes on a pixel grid (x, y, w, h in canvas px); text lines flow inside boxes at one fixed line height. Put the credit/source line in `credit`. Read `references/motion-grammar.md` before choosing machines and periods.
-3. **Render.** `python3 scripts/render.py --config my.json --out my.mp4` (needs Chrome/Chromium and ffmpeg on PATH, or `--chrome` / `--ffmpeg`). `--html-out page.html` also keeps the self-contained page, which runs live in any browser.
+3. **Render.** `python3 scripts/render.py --config my.json --out my.mp4` (needs Chrome/Chromium and ffmpeg on PATH, or `--chrome` / `--ffmpeg`; on macOS the browser is also found under `/Applications/*.app`). Linux and macOS only - on Windows run the scripts inside WSL. `--html-out page.html` also keeps the self-contained page, which runs live in any browser.
 4. **Check by frames, not by trust.** `python3 scripts/check_frames.py --config my.json --out-dir frames --repeat` samples ~120 time points, measures text overflow and overlaps from the DOM, exports PNGs and proves replay determinism. Open the PNGs and look: the checker catches geometry, not taste. Fix the config and repeat until it exits 0.
 
 ## Motion rules in one screen

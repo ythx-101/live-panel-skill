@@ -36,7 +36,7 @@ def main():
     ap.add_argument("--chrome"); ap.add_argument("--ffmpeg"); ap.add_argument("--template")
     ap.add_argument("--no-sandbox", action="store_true")
     a = ap.parse_args()
-    chrome = lp.find_exe(a.chrome, lp.CHROME_NAMES, "Chrome")
+    chrome = lp.find_chrome(a.chrome)
     os.makedirs(a.out_dir, exist_ok=True)
     page = os.path.join(tempfile.mkdtemp(prefix="livepanel-page-"), "page.html")
     cfg = lp.build_page(a.config, page, a.template)

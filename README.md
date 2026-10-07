@@ -26,12 +26,14 @@ Videos: `examples/codex-agents/codex-agents.mp4`, `examples/agent-architecture/a
 
 Requirements: Python 3.8+ (standard library only), Chrome or Chromium, ffmpeg. No pip packages.
 
+Platforms: Linux and macOS. On macOS the browser is found automatically under `/Applications` (Google Chrome, Chromium, Edge, Brave); pass `--chrome` to override. Windows is not supported natively because Chrome is driven over a DevTools pipe on POSIX file descriptors 3/4 (`pass_fds`), which Windows lacks; run the scripts unchanged inside WSL instead (`apt install chromium ffmpeg`, then render from `/mnt/c/...`).
+
 ```bash
 python3 scripts/render.py --config examples/codex-agents/config.json --out out.mp4
 python3 scripts/check_frames.py --config examples/codex-agents/config.json --out-dir frames --repeat
 ```
 
-- `render.py` options: `--width --height --duration --fps` (default from the config), `--chrome --ffmpeg` (default: found on PATH), `--html-out page.html` (keep the self-contained live page), `--keep-frames DIR`, `--audio none`, `--crf`.
+- `render.py` options: `--width --height --duration --fps` (default from the config), `--chrome --ffmpeg` (default: found on PATH, Chrome also under `/Applications` on macOS), `--html-out page.html` (keep the self-contained live page), `--keep-frames DIR`, `--audio none`, `--crf`.
 - `check_frames.py` samples ~120 time points, measures text overflow / overlap from the DOM, writes a few PNGs and (with `--repeat`) re-renders each exported frame after seeking away to prove it is identical. Exit status 1 on any problem.
 - To use as a skill, put this folder where your agent loads skills (for Claude Code: `~/.claude/skills/live-panel/`).
 

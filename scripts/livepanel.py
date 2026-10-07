@@ -5,6 +5,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_TEMPLATE = ROOT / "assets" / "template.html"
 CHROME_NAMES = ["google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "chrome", "microsoft-edge"]
+# On macOS the browser lives inside an .app bundle, not on PATH. Homebrew's `chromium` shim on PATH launches
+# and then dies on the DevTools pipe, so real bundles are preferred over anything shutil.which() would find.
+CHROME_MAC_PATHS = [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+]
 
 
 def find_exe(explicit, names, what):
@@ -18,6 +26,17 @@ def find_exe(explicit, names, what):
         if p:
             return p
     sys.exit(f"{what} not found on PATH (tried {', '.join(names)}); pass it explicitly")
+
+
+def find_chrome(explicit):
+    """Chrome lookup: an explicit path wins, then macOS .app bundles, then the PATH names in CHROME_NAMES."""
+    if explicit:
+        return find_exe(explicit, CHROME_NAMES, "Chrome")
+    if sys.platform == "darwin":
+        for p in CHROME_MAC_PATHS:
+            if os.path.exists(p):
+                return p
+    return find_exe(None, CHROME_NAMES, "Chrome")
 
 
 CANVAS_PRESETS = {"4:5": (1200, 1500), "3:4": (1080, 1440), "1:1": (1080, 1080)}
