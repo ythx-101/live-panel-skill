@@ -51,7 +51,7 @@ The page exposes `window.seek(t)`. Every visual is a pure function of `t` (and a
 
 - `assets/template.html` - the generic page. `scripts/scaffold.py` - short spec -> complete config (layout done for you). `scripts/render.py` - mp4. `scripts/check_frames.py` - checks + PNGs. `scripts/livepanel.py` - shared helpers (Chrome over the DevTools pipe, stdlib only).
 - `references/motion-grammar.md`, `references/config-schema.md`.
-- `examples/codex-agents/`, `examples/airbnb/`, `examples/agent-architecture/` - config, mp4 and screenshots. `examples/ring/`, `examples/funnel/`, `examples/funnel-karpathy/` (log scale, mono palette), `examples/loop-poteto/` (grouped loop with decisions) - view examples.
+- `examples/codex-agents/`, `examples/airbnb/`, `examples/agent-architecture/` - config, mp4 and an animated `preview.webp`. `examples/ring/`, `examples/funnel/`, `examples/funnel-karpathy/` (log scale, mono palette), `examples/loop-poteto/` (grouped loop with decisions) - view examples.
 - `assets/views/<kind>.js` - one file per view; `references/views.md`, `references/view-rules.md`, `references/verify-view.md`; `scripts/verify_view.py`.
 
 ## Light theme notes

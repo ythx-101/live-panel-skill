@@ -2,6 +2,12 @@
 
 **English** | [中文说明](#中文说明)
 
+| `loop` view · terminal-dark | `loop` view · light-pastel |
+| --- | --- |
+| ![Grok Bot 负责人 Lauren Tan 的每日 Loop, terminal-dark](examples/loop-poteto/preview-dark.webp) | ![Grok Bot 负责人 Lauren Tan 的每日 Loop, light-pastel](examples/loop-poteto/preview-light.webp) |
+
+<sub>Grok Bot 负责人 Lauren Tan 的每日 Loop. The workflow is from [Lauren Tan @poteto](https://x.com/poteto/status/2107510472601985336); the visual grammar follows an infographic by [@akshay_pachaar](https://x.com/akshay_pachaar); icons are [Lucide](https://lucide.dev) (ISC). Made with this repo: `examples/loop-poteto/config.json`.</sub>
+
 **live-panel is an open-source agent skill and renderer that turns one JSON config into an animated architecture diagram: a terminal-style "live panel" (or a light pastel infographic) rendered to an H.264 mp4 or a self-contained web page.** The layout stays fixed while the system looks like it is running: packets flow along the wires, a log scrolls, counters tick, bars flip state and side triggers light up in turn.
 
 > 中文一句话：**live-panel 把一个 JSON 配置渲染成会动的架构图**——终端监控面板风格的动态架构图 / agent 架构动图，或会动的浅色信息图，输出 mp4 视频或可循环的网页，画幅预设适配 X（4:5）和小红书（3:4）。
@@ -55,7 +61,7 @@ python3 scripts/render.py --config examples/minimal/config.json --out minimal.mp
 python3 scripts/check_frames.py --config examples/minimal/config.json --out-dir frames --repeat   # exit 0 = no overflow/overlap, replay identical
 ```
 
-![minimal example frame](examples/minimal/screenshots/frame_1.png)
+![minimal example, animated](examples/minimal/preview.webp)
 
 > ## Credits - please read
 > - **The idea, the look and the motion grammar come from an architecture-diagram clip by [@thedelost](https://x.com/thedelost)** (a Codex agent-tree panel, generated with GPT, screen-recorded as a web page): <https://x.com/thedelost/status/2105398038026195279>. It spread via a quote-post by **[@slashui](https://x.com/slashui)**: <https://x.com/slashui/status/2105850132365443528>.
@@ -65,15 +71,13 @@ python3 scripts/check_frames.py --config examples/minimal/config.json --out-dir 
 
 ## What it looks like
 
-| terminal-dark, 4:5 - recreation of @thedelost's Codex agent tree | light-pastel, 3:4 - 林纾's AI Agent architecture |
+| terminal-dark, 4:5 - recreation of [@thedelost](https://x.com/thedelost)'s Codex agent tree | light-pastel, 3:4 - 林纾's AI Agent architecture |
 | --- | --- |
-| ![codex](examples/codex-agents/screenshots/frame_1.png) | ![agent](examples/agent-architecture/screenshots/frame_1.png) |
+| ![codex agent tree, animated](examples/codex-agents/preview.webp) | ![agent architecture, animated](examples/agent-architecture/preview.webp) |
+| **terminal-dark, 4:5 - Airbnb, Chinese content, figures from the interview** | **1:1 - the minimal example above** |
+| ![airbnb, animated](examples/airbnb/preview.webp) | ![minimal, animated](examples/minimal/preview.webp) |
 
-Airbnb example (terminal-dark, Chinese content, figures from the interview):
-
-![airbnb](examples/airbnb/screenshots/frame_2.png)
-
-Videos: `examples/codex-agents/codex-agents.mp4`, `examples/agent-architecture/agent-architecture.mp4`, `examples/airbnb/airbnb.mp4` (about 28-30 s each, 30 fps, silent AAC track so chat apps do not treat them as GIFs).
+The previews are animated WebP (one full loop, 12-15 fps, about 600 px wide). Full-size videos: `examples/<name>/<name>.mp4` (30 fps, silent AAC track so chat apps do not treat them as GIFs).
 
 ## Install and use
 
@@ -109,11 +113,13 @@ Besides free-form boxes and wires, a config can hold `{"type":"view","kind":...}
 | a few numbers to watch (latency, cost, pass rate) | `kpi` - card grid, big number, sparkline cursor = shown value | planned |
 | an architecture with arbitrary boxes and wires | no view: free-form `box`/`path`/`flow` elements (the three original examples) | ready |
 
-| ring (light-pastel 4:5) | funnel (light-pastel 4:5) |
+| `ring` - a comet laps the steps, the centre counts iterations | `funnel` - particles fall stage by stage, widths follow the values |
 | --- | --- |
-| ![ring](examples/ring/screenshots/frame_1.png) | ![funnel](examples/funnel/screenshots/frame_1.png) |
+| ![ring view, animated](examples/ring/preview.webp) | ![funnel view, animated](examples/funnel/preview.webp) |
+| **`loop` - packets on every wire, marching loop-backs, icons that move** | **`loop`, light-pastel** |
+| ![loop view, animated](examples/loop-poteto/preview-dark.webp) | ![loop view light, animated](examples/loop-poteto/preview-light.webp) |
 
-Each view example also has a terminal-dark 4:5 and a light-pastel 3:4 screenshot and an mp4 in its folder.
+Every view example also has an mp4 in its folder.
 
 Rule of thumb: one view per picture; if the story needs two shapes, make two clips. Unlabelled numbers are illustrative and must say so on screen.
 
@@ -186,7 +192,7 @@ No. It runs locally with Python's standard library, a local Chrome/Chromium (hea
 Every frame is a pure function of time (`window.seek(t)`, fixed-seed picks, no wall clock, no `Math.random`, no CSS animation), so the same config renders the same frames; `check_frames.py --repeat` verifies it. The HTML page loops live in a browser.
 
 **Can I get a GIF?**
-The renderer writes mp4 (chat apps and X handle it better). Convert with ffmpeg if you need a GIF, e.g. `ffmpeg -i my.mp4 -vf "fps=15,scale=600:-1:flags=lanczos" my.gif`.
+The renderer writes mp4 (chat apps and X handle it better). Convert with ffmpeg if you need a GIF, e.g. `ffmpeg -i my.mp4 -vf "fps=15,scale=600:-1:flags=lanczos" my.gif`. For a README, an animated WebP of one loop is about a quarter of the GIF size and keeps glows smooth (the previews here are made that way): `ffmpeg -t <loop seconds> -i my.mp4 -vf "fps=15,scale=640:-1:flags=lanczos" -c:v libwebp_anim -q:v 70 -loop 0 my.webp`.
 
 **Does it work on Windows?**
 Linux and macOS natively; on Windows run the same scripts inside WSL.
@@ -224,6 +230,8 @@ MIT for the code (see `LICENSE`; carve-outs for the recreated example designs ar
 
 把一份系统描述（一个 JSON）变成**终端风格、一直在运行的动态架构图**，或者一张会动的浅色粉彩信息图：版面不动，连线上有光点流动，日志滚动，计数跳动，进度条过阈值翻状态，侧栏触发点依次点亮。产出 H.264 mp4（适合发 X 和小红书）或可直接打开的网页。
 
+动图预览：页首是 `loop` 视图（Grok Bot 负责人 Lauren Tan 的每日 Loop，流程原文 [Lauren Tan @poteto](https://x.com/poteto/status/2107510472601985336)，视觉语法参考 [@akshay_pachaar](https://x.com/akshay_pachaar)），例子画廊见 *What it looks like*，视图动图见 *Views*。动图是 WebP（一个完整循环），完整视频在各例子目录的 mp4。
+
 **出处**：动法和样式学自 [@thedelost](https://x.com/thedelost) 的 Codex agent 分工动态图（<https://x.com/thedelost/status/2105398038026195279>），经 [@slashui](https://x.com/slashui) 引用转发（<https://x.com/slashui/status/2105850132365443528>）。`examples/codex-agents/` 是对原图的复刻，设计归原作者；`examples/agent-architecture/` 把小红书 @林纾 的《AI Agent 的完整架构》静态图做成动态版，原图设计归林纾，画面底部有出处；`examples/airbnb/` 的数字出自 [Latent.Space 访谈](https://www.latent.space/p/airbnb)，为 Airbnb 自述，画面里跳动的计数为示意。
 
 用法：`python3 scripts/render.py --config <配置> --out out.mp4`；自查：`python3 scripts/check_frames.py --config <配置> --out-dir frames --repeat`。主题用 `theme.preset`（`terminal-dark` / `light-pastel`），画幅用 `canvas.preset`（`4:5` 1200x1500、`3:4` 1080x1440、`1:1` 1080x1080）。坐标是画布像素，换画幅需要另存一份配置重排。
@@ -255,7 +263,7 @@ MIT for the code (see `LICENSE`; carve-outs for the recreated example designs ar
 
 **能让 Claude Code / Codex 直接用吗？** 能。把整个文件夹放进 agent 的 skills 目录（Claude Code：`~/.claude/skills/live-panel/`），agent 按 `SKILL.md` 写配置、渲染、逐帧检查。
 
-**能出 GIF 吗？** 默认出 mp4；需要 GIF 可用 ffmpeg 转：`ffmpeg -i my.mp4 -vf "fps=15,scale=600:-1:flags=lanczos" my.gif`。
+**能出 GIF 吗？** 默认出 mp4；需要 GIF 可用 ffmpeg 转：`ffmpeg -i my.mp4 -vf "fps=15,scale=600:-1:flags=lanczos" my.gif`。放 README 更推荐动画 WebP（体积约为 GIF 的 1/4，发光不出色带）：`ffmpeg -t <一个循环的秒数> -i my.mp4 -vf "fps=15,scale=640:-1:flags=lanczos" -c:v libwebp_anim -q:v 70 -loop 0 my.webp`。
 
 **和 Mermaid / Excalidraw / Remotion 有什么不同？** Mermaid、Excalidraw 出静态图；Remotion、Manim 什么都能动但要写代码；live-panel 专做“固定版面、像实时监控面板一样运行”的架构图，只写 JSON，不写动画代码。对比表见上文 *How it compares*。
 
