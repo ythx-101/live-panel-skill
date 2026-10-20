@@ -1,0 +1,257 @@
+{
+ "meta": {
+  "title": "A tiny agent loop",
+  "source": "agent-loop.excalidraw"
+ },
+ "canvas": {
+  "preset": "16:9",
+  "duration": 15.0,
+  "fps": 30,
+  "width": 1920,
+  "height": 1080
+ },
+ "theme": {
+  "preset": "light-pastel",
+  "font": "Excalifont, Xiaolai, \"Noto Sans CJK SC\", sans-serif",
+  "fonts": [
+   {
+    "family": "Excalifont",
+    "src": "Excalifont-Regular-Latin.woff2",
+    "weight": "400"
+   },
+   {
+    "family": "Xiaolai",
+    "src": "Xiaolai-Regular.ttf",
+    "weight": "400"
+   }
+  ],
+  "colors": {
+   "bg": "#ffffff"
+  }
+ },
+ "elements": [
+  {
+   "type": "view",
+   "kind": "excalidraw",
+   "space": [
+    1000,
+    611
+   ],
+   "period": 15.0,
+   "t0": 0,
+   "seed": 5,
+   "boil": {
+    "step": 0.125,
+    "variants": 4,
+    "amp": 0.5
+   },
+   "roughness": 1.05,
+   "strokeWidth": 2.6,
+   "edgeRough": 0.8,
+   "edgeMulti": false,
+   "noteSize": 28,
+   "edgeGap": 6,
+   "texts": [
+    {
+     "t": "A tiny agent loop",
+     "x": 188.8,
+     "y": 128.3,
+     "size": 43,
+     "c": "ink",
+     "align": "left",
+     "weight": 0.6,
+     "underline": {
+      "hue": "yellow",
+      "width": 16,
+      "dy": 19,
+      "tilt": -4
+     }
+    }
+   ],
+   "nodes": [
+    {
+     "id": "user",
+     "t": "User",
+     "x": 253.2,
+     "y": 278.5,
+     "w": 214.6,
+     "h": 96.6,
+     "hue": "yellow",
+     "sub": "asks a question",
+     "size": 30,
+     "subSize": 20,
+     "r": 22
+    },
+    {
+     "id": "agent",
+     "t": "Agent",
+     "x": 542.9,
+     "y": 278.5,
+     "w": 236.1,
+     "h": 96.6,
+     "hue": "blue",
+     "sub": "plans the next step",
+     "size": 30,
+     "subSize": 20,
+     "r": 22
+    },
+    {
+     "id": "tools",
+     "t": "Tools",
+     "x": 832.7,
+     "y": 278.5,
+     "w": 214.6,
+     "h": 96.6,
+     "hue": "green",
+     "sub": "search · code",
+     "size": 30,
+     "subSize": 20,
+     "r": 48
+    },
+    {
+     "id": "check",
+     "t": "Check",
+     "x": 542.9,
+     "y": 482.4,
+     "w": 236.1,
+     "h": 96.6,
+     "hue": "red",
+     "sub": "good enough?",
+     "size": 30,
+     "subSize": 20,
+     "r": 32
+    },
+    {
+     "id": "answer",
+     "t": "Answer",
+     "x": 832.7,
+     "y": 482.4,
+     "w": 214.6,
+     "h": 96.6,
+     "hue": "violet",
+     "sub": "back to the user",
+     "size": 30,
+     "subSize": 20,
+     "r": 22
+    }
+   ],
+   "edges": [
+    {
+     "id": "a1",
+     "from": "user",
+     "to": "agent",
+     "fromSide": "right",
+     "fromOff": 0.0,
+     "toSide": "left",
+     "toOff": 0.0
+    },
+    {
+     "id": "a2",
+     "from": "agent",
+     "to": "tools",
+     "fromSide": "right",
+     "fromOff": 0.0,
+     "toSide": "left",
+     "toOff": 0.0
+    },
+    {
+     "id": "a3",
+     "from": "tools",
+     "to": "check",
+     "fromSide": "bottom",
+     "fromOff": -0.2,
+     "toSide": "right",
+     "toOff": -0.33,
+     "pts": [
+      [
+       811.2,
+       335.4
+      ],
+      [
+       757.6,
+       402.0
+      ],
+      [
+       669.6,
+       466.3
+      ]
+     ]
+    },
+    {
+     "id": "a4",
+     "from": "check",
+     "to": "answer",
+     "fromSide": "right",
+     "fromOff": 0.0,
+     "toSide": "left",
+     "toOff": 0.0,
+     "label": "yes",
+     "labelAt": [
+      693.2,
+      456.4
+     ],
+     "labelSize": 21
+    },
+    {
+     "id": "a5",
+     "from": "check",
+     "to": "agent",
+     "fromSide": "left",
+     "fromOff": 0.0,
+     "toSide": "bottom",
+     "toOff": -0.45,
+     "pts": [
+      [
+       424.9,
+       482.4
+      ],
+      [
+       371.2,
+       434.1
+      ],
+      [
+       382.0,
+       359.0
+      ],
+      [
+       489.3,
+       335.4
+      ]
+     ],
+     "dashed": true,
+     "label": "no, retry",
+     "labelAt": [
+      358.2,
+      348.6
+     ],
+     "labelSize": 21
+    }
+   ],
+   "steps": [
+    {
+     "node": "user",
+     "edge": "a1"
+    },
+    {
+     "node": "agent",
+     "edge": "a2"
+    },
+    {
+     "node": "tools",
+     "edge": "a3"
+    },
+    {
+     "node": "check",
+     "edge": "a4"
+    },
+    {
+     "node": "check",
+     "edge": "a5"
+    },
+    {
+     "node": "answer"
+    }
+   ]
+  }
+ ]
+}

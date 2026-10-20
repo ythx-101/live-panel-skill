@@ -25,7 +25,7 @@ If the content has one clear shape, use a `{"type":"view"}` element instead of p
 - repeating loop → `ring`; stage-by-stage drop-off → `funnel` (both ready, see `examples/ring/`, `examples/funnel/`).
 - nested workflow with decisions and loop-backs (retry on "no", outer/inner loop, human gate) → `loop` (ready, see `examples/loop-poteto/`).
 - relationships/clusters → `nebula`; work over time/parallel tracks → `timeline`; hierarchy → `tree`; a few watched numbers → `kpi` (planned, not in this version yet).
-- a hand-drawn Excalidraw-style diagram (pastel boxes, handwritten text, loops) that should keep moving → `excalidraw` (ready, see `examples/excalidraw-aqua/`, `examples/excalidraw-gardener/`; run `scripts/fetch_fonts.sh` once for the CJK hand font).
+- a hand-drawn Excalidraw-style diagram (pastel boxes, handwritten text, loops) that should keep moving → `excalidraw` (ready, see `examples/excalidraw-aqua/`, `examples/excalidraw-gardener/`; run `scripts/fetch_fonts.sh` once for the CJK hand font). The user already has a `.excalidraw` file → `python3 scripts/excalidraw_import.py file.excalidraw -o config.json` first (keeps arrow bindings, writes nodes/edges/steps), then add notes and render.
 - an architecture with arbitrary boxes and wires → no view, free-form elements as in the original examples.
 
 ## Fixed procedure
