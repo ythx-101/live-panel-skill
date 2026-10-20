@@ -8,12 +8,14 @@ What is kept
 - rectangles / ellipses / diamonds -> `nodes` (centre, size, rounded corners; fill colour -> nearest Excalidraw hue).
   The text bound inside a shape becomes the node title (first line) and subtitle (the rest).
 - arrows / lines -> `edges`. **Bindings are kept**: an arrow whose startBinding/endBinding point at shapes becomes
-  `{from, to, fromSide, toSide, fromOff, toOff}` attached to those node ids, so it re-routes when a node moves and the
-  animation steps can follow it. Multi-point (elbow / curved) arrows keep their points as `pts` *and* their from/to.
+  `{from, to, fromSide, toSide, fromOff, toOff}` attached to those node ids, so the animation steps can follow it and a
+  straight one re-routes when a node moves. Multi-point (elbow / curved) arrows keep their points as `pts` *and* their
+  from/to; the view draws `pts` as given, so those do not follow a moved node. Sharp/elbow corners are kept nearly sharp.
   Unbound arrows keep their geometry as `pts`. Dashed / dotted stroke -> `dashed` (dashes march). Text bound to an arrow
   -> its `label`.
 - free text -> `texts` (the largest one near the top is treated as the title and gets a highlighter underline).
-- frames, images, freedraw and embeddables are skipped (listed on stderr).
+- frames, images, freedraw and embeddables are skipped (listed on stderr). Shapes are drawn as rounded boxes; rotation
+  (`angle`) is ignored. `.excalidrawlib` libraries and clipboard JSON (`excalidraw/clipboard`) import too.
 
 What is generated
 - `steps`: the protagonist order. Default: walk the bound arrows from the top-most shape with no incoming arrow
@@ -67,7 +69,13 @@ def main():
     a = ap.parse_args()
 
     doc = json.load(open(a.src, encoding="utf-8"))
-    els = [e for e in doc.get("elements", []) if not e.get("isDeleted")]
+    raw = doc.get("elements")
+    if raw is None:  # .excalidrawlib: v2 libraryItems[].elements, v1 library[[...]]
+        raw = [e for it in doc.get("libraryItems", []) for e in it.get("elements", [])] + \
+              [e for it in doc.get("library", []) for e in it]
+    els = [e for e in raw if not e.get("isDeleted") and "id" in e and "type" in e]
+    for e in els:
+        e.setdefault("x", 0); e.setdefault("y", 0); e.setdefault("width", 0); e.setdefault("height", 0)
     by_id = {e["id"]: e for e in els}
     skipped = [e["type"] for e in els if e["type"] in ("frame", "magicframe", "image", "freedraw", "embeddable", "iframe")]
     if skipped:
@@ -79,7 +87,7 @@ def main():
     # bounding box of everything we draw
     xs, ys = [], []
     for e in els:
-        if e["type"] in SHAPES or e["type"] == "text":
+        if e["type"] in SHAPES or (e["type"] == "text" and not e.get("containerId")):  # bound text follows its container
             xs += [e["x"], e["x"] + e["width"]]; ys += [e["y"], e["y"] + e["height"]]
         elif e["type"] in ("arrow", "line"):
             for x, y in pts_abs(e):
@@ -100,9 +108,10 @@ def main():
     # shapes -> nodes
     nodes, nid = [], {}
     for e in els:
-        if e["type"] not in SHAPES:
+        if e["type"] not in SHAPES or e["width"] < 2 or e["height"] < 2:
             continue
-        bound = [by_id[b["id"]] for b in (e.get("boundElements") or []) if b.get("type") == "text" and b["id"] in by_id]
+        bound = [by_id[b["id"]] for b in (e.get("boundElements") or []) if b.get("type") == "text" and b["id"] in by_id] or \
+                [t for t in els if t["type"] == "text" and t.get("containerId") == e["id"]]
         txt = text_of(bound[0]) if bound else ""
         lines = txt.split("\n") if txt else [""]
         w, h = S(e["width"]), S(e["height"])
@@ -125,10 +134,19 @@ def main():
         nodes.append(n); nid[e["id"]] = n
 
     def side_and_off(n, p):
-        dx, dy = (p[0] - n["x"]) / (n["w"] / 2), (p[1] - n["y"]) / (n["h"] / 2)
+        dx, dy = (p[0] - n["x"]) / max(n["w"] / 2, 1), (p[1] - n["y"]) / max(n["h"] / 2, 1)
         if abs(dx) >= abs(dy):
             return ("right" if dx > 0 else "left"), round(max(-0.9, min(0.9, dy)), 2)
         return ("bottom" if dy > 0 else "top"), round(max(-0.9, min(0.9, dx)), 2)
+
+    def corners(P, c=6):  # the view draws `pts` as a smooth curve: flank each corner so it stays (nearly) sharp
+        def toward(v, u):
+            L = math.hypot(u[0] - v[0], u[1] - v[1])
+            return [round(v[0] + (u[0] - v[0]) * c / L, 1), round(v[1] + (u[1] - v[1]) * c / L, 1)] if L > 3 * c else None
+        Q = [P[0]]
+        for a0, v, a1 in zip(P, P[1:], P[2:]):
+            Q += [q for q in (toward(v, a0), v, toward(v, a1)) if q]
+        return Q + [P[-1]]
 
     # arrows -> edges
     edges, out_of, into = [], {}, {}
@@ -136,6 +154,8 @@ def main():
         if e["type"] not in ("arrow", "line"):
             continue
         P = [[X(x), Yc(y)] for x, y in pts_abs(e)]
+        if len(P) > 2 and (e.get("elbowed") or not e.get("roundness")):
+            P = corners(P)
         sb, eb = (e.get("startBinding") or {}).get("elementId"), (e.get("endBinding") or {}).get("elementId")
         E = {"id": e["id"]}
         if sb in nid and eb in nid:
@@ -152,17 +172,53 @@ def main():
             if eb in nid: E["to"] = eb
         if e.get("strokeStyle") in ("dashed", "dotted"):
             E["dashed"] = True
-        lab = [by_id[b["id"]] for b in (e.get("boundElements") or []) if b.get("type") == "text" and b["id"] in by_id]
+        lab = [by_id[b["id"]] for b in (e.get("boundElements") or []) if b.get("type") == "text" and b["id"] in by_id] or \
+              [t for t in els if t["type"] == "text" and t.get("containerId") == e["id"]]
         if lab:
-            mid = P[len(P) // 2] if len(P) > 2 else [(P[0][0] + P[-1][0]) / 2, (P[0][1] + P[-1][1]) / 2]
-            a0, a1 = P[0], P[-1]
-            dx, dy = a1[0] - a0[0], a1[1] - a0[1]
-            L = math.hypot(dx, dy) or 1
-            nx, ny = -dy / L, dx / L  # perpendicular: lift the label off the line
-            if ny > 0: nx, ny = -nx, -ny
-            E["label"], E["labelAt"] = text_of(lab[0]), [round(mid[0] + nx * 26, 1), round(mid[1] + ny * 26, 1)]
-            E["labelSize"] = round(max(16, lab[0].get("fontSize", 20) * s))
+            E["label"], E["labelSize"] = text_of(lab[0]), round(max(16, lab[0].get("fontSize", 20) * s))
         edges.append(E)
+
+    def route(E):  # what the view will draw (2-point bound arrows are re-anchored on the node sides)
+        if "pts" in E:
+            return E["pts"]
+        out = []
+        for k, sd, off in ((E["from"], E["fromSide"], E["fromOff"]), (E["to"], E["toSide"], E["toOff"])):
+            n = nid[k]
+            out.append([n["x"] + (n["w"] / 2 if sd == "right" else -n["w"] / 2 if sd == "left" else off * n["w"] / 2),
+                        n["y"] + (n["h"] / 2 if sd == "bottom" else -n["h"] / 2 if sd == "top" else off * n["h"] / 2)])
+        return out
+
+    def dense(Q, step=8):
+        out = []
+        for p, q in zip(Q, Q[1:]):
+            k = max(1, int(math.hypot(q[0] - p[0], q[1] - p[1]) / step))
+            out += [[p[0] + (q[0] - p[0]) * i / k, p[1] + (q[1] - p[1]) * i / k] for i in range(k)]
+        return out + [Q[-1]]
+
+    obstacles = [q for E in edges for q in dense(route(E))]
+    for E in edges:
+        if "label" not in E:
+            continue
+        Q = route(E)
+        seg = [math.hypot(q[0] - p[0], q[1] - p[1]) for p, q in zip(Q, Q[1:])]
+        rest, i = sum(seg) / 2, 0
+        while i < len(seg) - 1 and rest > seg[i]:
+            rest -= seg[i]; i += 1
+        L = seg[i] or 1
+        dx, dy = Q[i + 1][0] - Q[i][0], Q[i + 1][1] - Q[i][1]
+        mid = [Q[i][0] + dx * rest / L, Q[i][1] + dy * rest / L]
+        lw, lh = len(max(E["label"].split("\n"), key=len)) * E["labelSize"] * 0.3 + 6, E["labelSize"] * 0.6 + 4  # half extents
+        best = None
+        for sgn in (-1, 1):  # either side of the arrow, a little further out if it's crowded
+            for lift in (1.0, 1.6):
+                nx, ny = sgn * -dy / L, sgn * dx / L
+                c = [mid[0] + nx * (abs(nx) * lw + abs(ny) * lh + 6) * lift, mid[1] + ny * (abs(nx) * lw + abs(ny) * lh + 6) * lift]
+                gap = min([math.hypot(max(abs(q[0] - c[0]) - lw, 0), max(abs(q[1] - c[1]) - lh, 0)) for q in obstacles] +
+                          [math.hypot(max(abs(n["x"] - c[0]) - n["w"] / 2 - lw, 0), max(abs(n["y"] - c[1]) - n["h"] / 2 - lh, 0)) for n in nodes])
+                score = min(gap, 8) - 6 * (lift - 1) - (0.5 if ny > 0 else 0)  # room first, then close to the line, then above it
+                if best is None or score > best[0]:
+                    best = (score, c)
+        E["labelAt"] = [round(best[1][0], 1), round(best[1][1], 1)]
 
     # free text -> texts
     texts, free = [], [e for e in els if e["type"] == "text" and not e.get("containerId")]

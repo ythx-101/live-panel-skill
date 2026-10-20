@@ -130,7 +130,7 @@ python3 scripts/excalidraw_import.py my-diagram.excalidraw -o my-diagram.json
 python3 scripts/render.py --config my-diagram.json --out my-diagram.mp4
 ```
 
-Boxes, ellipses and diamonds become nodes (their text becomes title + subtitle, their fill the nearest pastel). Arrows keep their **bindings**: an arrow attached to two shapes becomes an edge `from`/`to` those node ids, so moving a box re-routes it and the animation follows it; elbow/curved arrows keep their drawn route, dashed ones march, arrow labels stay. The step order is walked along the arrows (or pass `--order "Agent,Tools,..."`); add a `note` to any step in the JSON. Frames, images and freehand strokes are skipped. Example: `examples/excalidraw-import/`.
+Rectangles, ellipses and diamonds become nodes, all drawn as rounded boxes (their text becomes title + subtitle, their fill the nearest pastel; rotation is ignored). Arrows keep their **bindings**: an arrow attached to two shapes becomes an edge `from`/`to` those node ids, so the steps can follow it; a straight bound arrow is re-anchored on the node sides (move a box and it follows), while elbow/curved arrows keep their drawn route as fixed `pts` (move a box and you must edit or drop `pts`). Dashed ones march, arrow labels stay (re-placed beside the arrow). The step order is walked along the arrows (or pass `--order "Agent,Tools,..."`); add a `note` to any step in the JSON. Frames, images and freehand strokes are skipped; `.excalidrawlib` libraries and copied clipboard JSON import too. Example: `examples/excalidraw-import/`.
 
 Rule of thumb: one view per picture; if the story needs two shapes, make two clips. Unlabelled numbers are illustrative and must say so on screen.
 
