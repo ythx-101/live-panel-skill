@@ -92,6 +92,7 @@ python3 scripts/check_frames.py --config examples/codex-agents/config.json --out
 
 - `render.py` options: `--width --height --duration --fps` (default from the config), `--chrome --ffmpeg` (default: found on PATH, Chrome also under `/Applications` on macOS), `--html-out page.html` (keep the self-contained live page), `--keep-frames DIR`, `--audio none`, `--crf`.
 - `check_frames.py` samples ~120 time points, measures text overflow / overlap from the DOM, writes a few PNGs and (with `--repeat`) re-renders each exported frame after seeking away to prove it is identical. Exit status 1 on any problem.
+- Tests: `python3 -m unittest tests.test_offline -v` (no browser needed); `CHROME=/path/to/chromium python3 -m unittest discover -s tests -v` (full).
 - To use as a skill, put this folder where your agent loads skills (for Claude Code: `~/.claude/skills/live-panel/`).
 
 ### Make your own
@@ -100,13 +101,15 @@ python3 scripts/check_frames.py --config examples/codex-agents/config.json --out
 
 ## Views: pick a diagram shape (视图)
 
-Besides free-form boxes and wires, a config can hold `{"type":"view","kind":...}` elements: ready-made diagram shapes that lay themselves out inside a rect, work at 4:5 / 3:4 / 1:1 and in both themes, and animate by the same motion grammar. Contract and per-view data: [`references/views.md`](references/views.md); acceptance gate: `scripts/verify_view.py` ([`references/verify-view.md`](references/verify-view.md)).
+Besides free-form boxes and wires, a config can hold `{"type":"view","kind":...}` elements: ready-made diagram shapes that lay themselves out inside a rect (`ring`, `funnel` and `loop` work at 4:5 / 3:4 / 1:1 and in both themes), and animate by the same motion grammar. Contract and per-view data: [`references/views.md`](references/views.md); acceptance gate: `scripts/verify_view.py` ([`references/verify-view.md`](references/verify-view.md)).
 
 | what you want to show | view | status |
 | --- | --- | --- |
 | a loop that repeats (agent plan→act→verify, PDCA, release cycle) | `ring` - 3-8 steps on a circle, comet, lap counter | ready (`examples/ring/`) |
 | how many survive each stage (bug→merged PR, signup→paid) | `funnel` - widths proportional to values, conversion % between stages | ready (`examples/funnel/`; log widths + one-accent palette for population-scale data: `examples/funnel-karpathy/`) |
 | a nested workflow with decisions and loop-backs (outer / inner loop, retry on "no", human gate) | `loop` - grouped frames, icon cards, decision diamonds, dashed loop-backs, a token walking the script | ready (`examples/loop-poteto/`) |
+| a hand-drawn whiteboard diagram that keeps moving, or an existing .excalidraw file | `excalidraw` - rough.js boxes and arrows, handwritten fonts, a pen loop walking the steps | ready (`examples/excalidraw-aqua/`, `examples/excalidraw-gardener/`, import: `examples/excalidraw-import/`) |
+| an "A vs B" explainer board | `sketchboard` | example: `examples/hybrid-agent/` (fonts not bundled, see its README) |
 | who relates to whom, clusters of a knowledge base or ecosystem | `nebula` - force layout by group, halos, packets on strong edges | planned |
 | work over time, parallel tracks, dependencies | `timeline` - lanes, playhead, done/active/pending | planned |
 | a hierarchy (agent → sub-agents → tools, org chart) | `tree` - tidy tree, expand/collapse without layout jumps | planned |
@@ -121,7 +124,7 @@ Besides free-form boxes and wires, a config can hold `{"type":"view","kind":...}
 | **`excalidraw` - hand-drawn Excalidraw look that keeps running: pen loops, inked arrows, boiling lines** | **`excalidraw`, Chinese (小赖 Xiaolai handwriting)** |
 | ![excalidraw view, AQuA, animated](examples/excalidraw-aqua/preview.webp) | ![excalidraw view, gardener loop, animated](examples/excalidraw-gardener/preview.webp) |
 
-Every view example also has an mp4 in its folder.
+Some view examples also have an mp4 in their folder (`ring`, `funnel`, `loop-poteto`, `excalidraw-import`); render the others with `scripts/render.py`.
 
 **Already drew it in Excalidraw?** Import the file and it starts moving:
 
@@ -149,6 +152,8 @@ Rule of thumb: one view per picture; if the story needs two shapes, make two cli
 
 Positions in a config are absolute canvas pixels, so a config is authored for one canvas; `render.py --width/--height` only rescales (letterboxes) it. For another ratio, copy the config and re-place the boxes.
 
+`excalidraw_import.py --preset 16:9` writes 1920x1080 (width/height explicit); the other tools only offer the three presets above.
+
 | `theme.preset` | look |
 | --- | --- |
 | `terminal-dark` | dark window, monospace, segmented text-mode boxes (the original clip's style) |
@@ -171,7 +176,7 @@ The page exposes `window.seek(t)`. Every visual is a pure function of `t`; the f
 
 ## Fonts
 
-One font is bundled: 得意黑 Smiley Sans (OFL, `assets/fonts/`), embedded into the page only when a config sets `theme.titleFont: "smiley"` (used by the view examples for titles and big numbers). Everything else falls back through installed fonts: terminal themes use JetBrains Mono (OFL) -> IBM Plex Mono (OFL) -> DejaVu Sans Mono -> Noto Sans Mono CJK SC (OFL) -> any monospace; light-pastel uses Noto Sans CJK SC (OFL) / PingFang SC / Microsoft YaHei -> Helvetica/Arial, and Noto Serif CJK SC for the big title. Install JetBrains Mono and Noto CJK for the exact look in the examples; emoji icons need a colour emoji font (e.g. Noto Color Emoji). Different fonts change glyph widths slightly, so re-run `check_frames.py` after changing fonts.
+Two fonts are bundled in `assets/fonts/`: 得意黑 Smiley Sans (OFL), embedded into the page only when a config sets `theme.titleFont: "smiley"` (used by the view examples for titles and big numbers), and Excalifont (Latin subset, OFL) for the `excalidraw` view. The CJK handwriting font Xiaolai (小赖, OFL, about 22 MB) is not in the repo: run `scripts/fetch_fonts.sh` to download it; when fontTools is installed, the page embeds only the characters each config uses (otherwise the whole file). Everything else falls back through installed fonts: terminal themes use JetBrains Mono (OFL) -> IBM Plex Mono (OFL) -> DejaVu Sans Mono -> Noto Sans Mono CJK SC (OFL) -> any monospace; light-pastel uses Noto Sans CJK SC (OFL) / PingFang SC / Microsoft YaHei -> Helvetica/Arial, and Noto Serif CJK SC for the big title. Install JetBrains Mono and Noto CJK for the exact look in the examples; emoji icons need a colour emoji font (e.g. Noto Color Emoji). Different fonts change glyph widths slightly, so re-run `check_frames.py` after changing fonts.
 
 ## Self-test results (this repo, Chrome 154, ffmpeg 7.1)
 
@@ -202,6 +207,12 @@ No. It runs locally with Python's standard library, a local Chrome/Chromium (hea
 **Is the output deterministic? Does it loop?**
 Every frame is a pure function of time (`window.seek(t)`, fixed-seed picks, no wall clock, no `Math.random`, no CSS animation), so the same config renders the same frames; `check_frames.py --repeat` verifies it. The HTML page loops live in a browser.
 
+**Can I animate an existing Excalidraw diagram?**
+Yes. Run `python3 scripts/excalidraw_import.py my.excalidraw -o my.json`, then `python3 scripts/render.py --config my.json --out my.mp4`. Arrow bindings are kept; frames, images and freehand strokes are skipped. For Chinese handwriting run `scripts/fetch_fonts.sh` first.
+
+**Which view should I pick?**
+Match the shape of your content: a repeating cycle -> `ring`, a funnel of stages -> `funnel`, a nested workflow with decisions -> `loop`, a hand-drawn whiteboard -> `excalidraw`, arbitrary boxes and wires -> no view. See the Views table above.
+
 **Can I get a GIF?**
 The renderer writes mp4 (chat apps and X handle it better). Convert with ffmpeg if you need a GIF, e.g. `ffmpeg -i my.mp4 -vf "fps=15,scale=600:-1:flags=lanczos" my.gif`. For a README, an animated WebP of one loop is about a quarter of the GIF size and keeps glows smooth (the previews here are made that way): `ffmpeg -t <loop seconds> -i my.mp4 -vf "fps=15,scale=640:-1:flags=lanczos" -c:v libwebp_anim -q:v 70 -loop 0 my.webp`.
 
@@ -225,7 +236,7 @@ Yes, with credit: put the original author and link in the `credit` footer and in
 | Built-in checks | text overflow / overlap from the DOM, replay determinism | - | - | - | - |
 | Best for | social posts that show a system or agent tree "running" (X 4:5, Xiaohongshu 3:4) | docs and READMEs | sketches, whiteboarding | general programmatic video | math and explainer animation |
 
-Use Mermaid or Excalidraw when a static diagram is enough, Remotion or Manim when you want full control over arbitrary motion, and live-panel when you want a fixed-layout architecture diagram that looks like a live monitoring panel without writing animation code.
+Use Mermaid or Excalidraw when a static diagram is enough, Remotion or Manim when you want full control over arbitrary motion, and live-panel when you want a fixed-layout architecture diagram that looks like a live monitoring panel without writing animation code; and if you already have an Excalidraw drawing, import it into live-panel to make it move.
 
 ## Cite
 
@@ -245,7 +256,7 @@ MIT for the code (see `LICENSE`; carve-outs for the recreated example designs ar
 
 **出处**：动法和样式学自 [@thedelost](https://x.com/thedelost) 的 Codex agent 分工动态图（<https://x.com/thedelost/status/2105398038026195279>），经 [@slashui](https://x.com/slashui) 引用转发（<https://x.com/slashui/status/2105850132365443528>）。`examples/codex-agents/` 是对原图的复刻，设计归原作者；`examples/agent-architecture/` 把小红书 @林纾 的《AI Agent 的完整架构》静态图做成动态版，原图设计归林纾，画面底部有出处；`examples/airbnb/` 的数字出自 [Latent.Space 访谈](https://www.latent.space/p/airbnb)，为 Airbnb 自述，画面里跳动的计数为示意。
 
-用法：`python3 scripts/render.py --config <配置> --out out.mp4`；自查：`python3 scripts/check_frames.py --config <配置> --out-dir frames --repeat`。主题用 `theme.preset`（`terminal-dark` / `light-pastel`），画幅用 `canvas.preset`（`4:5` 1200x1500、`3:4` 1080x1440、`1:1` 1080x1080）。坐标是画布像素，换画幅需要另存一份配置重排。
+用法：`python3 scripts/render.py --config <配置> --out out.mp4`；自查：`python3 scripts/check_frames.py --config <配置> --out-dir frames --repeat`。主题用 `theme.preset`（`terminal-dark` / `light-pastel`），画幅用 `canvas.preset`（`4:5` 1200x1500、`3:4` 1080x1440、`1:1` 1080x1080）。坐标是画布像素，换画幅需要另存一份配置重排。`excalidraw_import.py --preset 16:9` 会写出 1920x1080（显式写入 width/height），其余工具只有上面三种预设。
 
 ### 视图怎么选
 
@@ -254,6 +265,8 @@ MIT for the code (see `LICENSE`; carve-outs for the recreated example designs ar
 | 循环往复的流程（agent 规划→执行→验证→反思、PDCA、发版周期） | `ring` 环形 | 已完成 |
 | 每一步还剩多少（Bug→合并 PR、注册→付费） | `funnel` 漏斗 | 已完成（跨数量级的真实数据用对数宽度 + 单色重点：`examples/funnel-karpathy/`） |
 | 带分支判定和回环的嵌套工作流（外环/内环、No 就回去、人工闸门） | `loop` 分组回环图 | 已完成（`examples/loop-poteto/`） |
+| 手绘白板风、一直在动的图，或已有的 .excalidraw 文件 | `excalidraw` 手绘白板 | 已完成（可导入 .excalidraw 文件：`examples/excalidraw-aqua/`、`examples/excalidraw-gardener/`、`examples/excalidraw-import/`） |
+| “A vs B” 手绘对比板 | `sketchboard` 手绘对比板 | 示例 `examples/hybrid-agent/`（字体未随仓库提供，见其 README） |
 | 谁和谁有关系、知识库/生态的聚类 | `nebula` 星云/关系图谱 | 待做 |
 | 随时间推进、多条并行泳道、依赖 | `timeline` 时间线/泳道 | 待做 |
 | 层级结构（主 agent→子 agent→工具、组织架构） | `tree` 层级树 | 待做 |
@@ -273,6 +286,10 @@ MIT for the code (see `LICENSE`; carve-outs for the recreated example designs ar
 **需要 API key 或联网吗？** 不需要。Python 标准库 + 本机 Chrome/Chromium + ffmpeg，全部本地运行。
 
 **能让 Claude Code / Codex 直接用吗？** 能。把整个文件夹放进 agent 的 skills 目录（Claude Code：`~/.claude/skills/live-panel/`），agent 按 `SKILL.md` 写配置、渲染、逐帧检查。
+
+**已经用 Excalidraw 画好的图能直接变成动图吗？** 能。`python3 scripts/excalidraw_import.py my.excalidraw -o my.json`，再 `python3 scripts/render.py --config my.json --out my.mp4`。箭头的 binding 会保留；frame、图片、手绘笔迹会跳过。中文手写体先跑 `scripts/fetch_fonts.sh`。
+
+**选哪个视图？** 按内容形状选：循环 → `ring`，漏斗 → `funnel`，带判定的嵌套流程 → `loop`，手绘白板 → `excalidraw`，任意框线 → 不用视图。见上文视图表。
 
 **能出 GIF 吗？** 默认出 mp4；需要 GIF 可用 ffmpeg 转：`ffmpeg -i my.mp4 -vf "fps=15,scale=600:-1:flags=lanczos" my.gif`。放 README 更推荐动画 WebP（体积约为 GIF 的 1/4，发光不出色带）：`ffmpeg -t <一个循环的秒数> -i my.mp4 -vf "fps=15,scale=640:-1:flags=lanczos" -c:v libwebp_anim -q:v 70 -loop 0 my.webp`。
 

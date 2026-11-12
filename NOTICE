@@ -9,6 +9,15 @@ examples/airbnb/ are Airbnb's own statements from a public interview.
 assets/fonts/SmileySans-Oblique.woff2 is 得意黑 Smiley Sans, licensed under the SIL Open
 Font License 1.1 (assets/fonts/SmileySans-OFL.txt), not under MIT.
 
+assets/fonts/Excalifont-Regular-Latin.woff2 is Excalifont, licensed under the SIL Open Font
+License 1.1 (assets/fonts/Excalifont-OFL.txt), not under MIT.
+
+The Xiaolai (小赖, LXGW) font downloaded by scripts/fetch_fonts.sh is licensed under the SIL
+Open Font License 1.1 (assets/fonts/Xiaolai-OFL.txt); it is not stored in this repository.
+
+assets/views/excalidraw.js embeds rough.js, Copyright (c) 2019 Preet Shihn, MIT License; the
+full text is in assets/views/ROUGH-LICENSE.txt.
+
 assets/views/loop.js embeds icon paths from Lucide (https://lucide.dev), ISC License; the
 full text, with the Feather (MIT) portions, is in assets/views/LUCIDE-LICENSE.txt.
 Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT).

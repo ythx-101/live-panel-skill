@@ -9,6 +9,7 @@ Key facts:
 - Runs locally: Python 3.8+ standard library, Chrome/Chromium (headless, DevTools pipe), ffmpeg. No API key, no network. Linux and macOS; Windows via WSL.
 - Deterministic: every frame is a pure function of time (window.seek(t)); check_frames.py measures text overflow/overlap from the DOM and proves replays are identical.
 - Agent skill: SKILL.md works with Claude Code, Codex and other agents that load SKILL.md skills.
+- Import: an existing Excalidraw drawing (.excalidraw) becomes an animated diagram / 已有 Excalidraw 图可直接导入变成动图
 - Credit: the look and motion grammar come from an architecture-diagram clip by @thedelost (https://x.com/thedelost/status/2105398038026195279). Recreations must credit the original author; numbers without a source are labelled "illustrative".
 - License: MIT for the code; the recreated example designs belong to their original authors.
 
@@ -18,7 +19,7 @@ Key facts:
 - [SKILL.md](https://github.com/ythx-101/live-panel-skill/blob/main/SKILL.md): the agent skill - when to use it, fixed procedure, motion rules, credit rule
 - [Config schema](https://github.com/ythx-101/live-panel-skill/blob/main/references/config-schema.md): every JSON key, element and state machine
 - [Motion grammar](https://github.com/ythx-101/live-panel-skill/blob/main/references/motion-grammar.md): the three-tempo motion rules and timing recipe
-- [Views](https://github.com/ythx-101/live-panel-skill/blob/main/references/views.md): auto-laid-out diagram shapes (`ring` loop, `funnel` conversion, `loop` nested workflow with decisions; nebula/timeline/tree/kpi planned) that work at 4:5, 3:4 and 1:1 in both themes; acceptance gate `scripts/verify_view.py`
+- [Views](https://github.com/ythx-101/live-panel-skill/blob/main/references/views.md): auto-laid-out diagram shapes (`ring` loop, `funnel` conversion, `loop` nested workflow with decisions; nebula/timeline/tree/kpi planned) that work at 4:5, 3:4 and 1:1 in both themes; acceptance gate `scripts/verify_view.py`. Also `excalidraw` (hand-drawn Excalidraw look, `.excalidraw` import) and `sketchboard` (hand-drawn "A vs B" board)
 
 ## Examples
 
@@ -29,6 +30,10 @@ Key facts:
 - [Ring view](https://github.com/ythx-101/live-panel-skill/blob/main/examples/ring/config.json) and [funnel view](https://github.com/ythx-101/live-panel-skill/blob/main/examples/funnel/config.json): agent loop and bug-fix pipeline, laid out automatically
 - [Loop view](https://github.com/ythx-101/live-panel-skill/blob/main/examples/loop-poteto/config.json): outer/inner loop with decision diamonds and loop-backs, from a public thread by @poteto
 - [Karpathy funnel](https://github.com/ythx-101/live-panel-skill/blob/main/examples/funnel-karpathy/config.json): real-data funnel from 8B people to 5,000, log-scale widths
+- [Excalidraw view, AQuA](https://github.com/ythx-101/live-panel-skill/blob/main/examples/excalidraw-aqua/config-4x5.json): English, AQuA inner/outer loop, hand-drawn look
+- [Excalidraw view, gardener](https://github.com/ythx-101/live-panel-skill/blob/main/examples/excalidraw-gardener/config-4x5.json): Chinese, 小赖 handwriting
+- [Excalidraw import](https://github.com/ythx-101/live-panel-skill/blob/main/examples/excalidraw-import/config.json): a `.excalidraw` file converted to a config
+- [Hybrid agent](https://github.com/ythx-101/live-panel-skill/blob/main/examples/hybrid-agent/config.json): sketchboard view; figures come from an arXiv paper, see its README
 
 ## Code
 
@@ -36,6 +41,8 @@ Key facts:
 - [scripts/check_frames.py](https://github.com/ythx-101/live-panel-skill/blob/main/scripts/check_frames.py): overflow/overlap checks, PNG export, replay determinism
 - [scripts/scaffold.py](https://github.com/ythx-101/live-panel-skill/blob/main/scripts/scaffold.py): short spec -> complete config (rows of boxes, wires, rail, log)
 - [scripts/verify_view.py](https://github.com/ythx-101/live-panel-skill/blob/main/scripts/verify_view.py): view acceptance gate (3 canvases x 2 themes)
+- [scripts/excalidraw_import.py](https://github.com/ythx-101/live-panel-skill/blob/main/scripts/excalidraw_import.py): `.excalidraw` -> excalidraw view config, keeps arrow bindings
+- [scripts/fetch_fonts.sh](https://github.com/ythx-101/live-panel-skill/blob/main/scripts/fetch_fonts.sh): downloads the Xiaolai handwriting font
 - [assets/template.html](https://github.com/ythx-101/live-panel-skill/blob/main/assets/template.html): the generic page (never edited per diagram)
 
 ## Optional
